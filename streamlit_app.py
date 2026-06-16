@@ -136,7 +136,7 @@ if st.button("生成捷报") or raw_input:
                     
         except Exception as e:
             st.error(f"格式错误或解析失败: {e}")
-                    st.code(message, language="text")
+            st.code(message, language="text")
                     
         except Exception as e:
             st.error(f"格式错误或解析失败: {e}")
