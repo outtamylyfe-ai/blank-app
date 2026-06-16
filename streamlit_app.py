@@ -1,7 +1,8 @@
 import re
 import streamlit as st
+from collections import Counter
 
-# 1. Keep your contacts dictionary intact
+# 1. Contacts dictionary (Updated 889 to Yeshe Koh)
 contacts = {
     "728": "Bryan", "199": "Sam Leong", "252": "Yvonne Tan", "710": "Eric Yip",
     "758": "Caren", "768": "Ken Goh", "778": "Tony", "788": "Teck Meng",
@@ -13,7 +14,7 @@ contacts = {
     "566": "Chun Huei", "779": "Chin Moi", "989": "Sex Leng", "955": "Yong Heng",
     "819": "Chun Yong", "648": "Yeong Chee", "829": "Mee Mee", "879": "Derek Yeo",
     "891": "Moi Heong", "876": "Jasmine Yien", "873": "Siew Lan", "839": "Xue Ru",
-    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Yiqin",
+    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Yeshe Koh", # Updated name here
     "826": "Bee Suan", "813": "Danjuan", "836": "Poh Yoke", "872": "Siew Nee",
     "827": "Vera", "835": "Melly", "6": "Anicca Pte Ltd", "129": "Poh Hua",
     "399": "Betsy Fon", "166": "Su Mei", "413": "Yee Woon", "117": "Liang Ying",
@@ -30,48 +31,76 @@ contacts = {
     "155": "Joice Jedediah", "156": "Lisianah Soewarno", "737": "Henry Tay"
 }
 
-# 2. Parsing logic remains the same
-def parse_product(content):
-    content = content.strip()
-    qty_match = re.match(r"(\d+)\s*[xX]\s+(.+)", content)
-    
-    if qty_match:
-        qty = int(qty_match.group(1))
-        product = qty_match.group(2).strip()
-        return qty, product
+def parse_all_products(raw_text):
+    # Find everything inside any bracket [...]
+    brackets = re.findall(r"\[(.*?)\]", raw_text)
+    if not brackets:
+        return []
 
-    items = []
-    for item in content.split(","):
-        item = item.strip()
-        if "URN" in item.upper():
+    product_counts = Counter()
+
+    for content in brackets:
+        # Skip brackets explicitly containing price metadata like SRF fees
+        if "SRF" in content.upper():
             continue
-        items.append(item)
 
-    h_products = []
-    for item in items:
-        m = re.search(r"H\d+", item)
-        if m:
-            h_products.append(m.group())
+        # Split items by comma if they are listed together
+        items = [item.strip() for item in content.split(",") if item.strip()]
 
-    if h_products:
-        if len(set(h_products)) == 1:
-            return len(h_products), h_products[0]
-        return len(h_products), ", ".join(h_products)
+        for item in items:
+            qty = 1
+            product_name = item
 
-    return 1, items[0]
+            # Pattern A: "2 X NV LONGEVITY" or "2X NV..."
+            match_front = re.match(r"^(\d+)\s*[xX]\s+(.+)$", item)
+            # Pattern B: "NV LONGEVITY X2" or "NV... X 2"
+            match_back = re.search(r"(.+?)\s*[xX]\s*(\d+)$", item)
+
+            if match_front:
+                qty = int(match_front.group(1))
+                product_name = match_front.group(2).strip()
+            elif match_back:
+                qty = int(match_back.group(2))
+                product_name = match_back.group(1).strip()
+            
+            # Pattern C: Check for complex tracking codes like "B-PS-E-07-328"
+            # It extracts the product type acronym (e.g., 'PS' or 'RS') from the code block
+            elif "-" in product_name:
+                code_parts = product_name.split("-")
+                if len(code_parts) >= 2:
+                    # Usually picks the second item or matching token (e.g., PS, RS)
+                    for part in code_parts:
+                        if part.upper() in ["PS", "RS", "NV", "H"]: 
+                            product_name = part.upper()
+                            break
+                    else:
+                        product_name = code_parts[1].upper()
+
+            # Handle explicit legacy single item short-codes (e.g., H523)
+            m_h = re.search(r"H\d+", product_name)
+            if m_h:
+                product_name = m_h.group()
+
+            product_counts[product_name] += qty
+
+    # Format the product dictionary back to lines list
+    output_lines = []
+    for prod, count in product_counts.items():
+        output_lines.append(f"✨ {count} x {prod}")
+    
+    return output_lines
 
 # 3. Streamlit UI Elements
 st.title("🏆 业绩捷报生成器")
 st.write("输入包含编号和产品的原始文本，一键生成喜报。")
 
-# Text box for user input
-raw_input = st.text_input("在此粘贴输入内容:", placeholder="例如: 728/ 其他文本 [2 X NV GRACE]")
+raw_input = st.text_input("在此粘贴输入内容:", placeholder="粘贴业绩文案...")
 
 if st.button("生成捷报") or raw_input:
     if raw_input.strip():
         try:
             raw = raw_input.strip()
-            code = raw.split("/")[0]
+            code = raw.split("/")[0].strip()
 
             if code.isdigit():
                 code = str(int(code))
@@ -80,13 +109,12 @@ if st.button("生成捷报") or raw_input:
                 st.error("❌ 找不到对应的领导编号 (Code not found).")
             else:
                 name = contacts[code]
-                bracket = re.search(r"\[(.*?)\]", raw)
+                product_lines = parse_all_products(raw)
 
-                if not bracket:
-                    st.warning("⚠️ 文本中未检测到被中括号 `[...]` 包裹的产品信息。")
+                if not product_lines:
+                    st.warning("⚠️ 文本中未检测到有效的商品或明细信息。")
                 else:
-                    content = bracket.group(1)
-                    qty, product = parse_product(content)
+                    products_formatted = "\n".join(product_lines)
 
                     # Build message template
                     message = f"""让我们以最热烈的掌声，
@@ -95,7 +123,7 @@ if st.button("生成捷报") or raw_input:
 🔥 热烈恭喜 {name} 领导 🔥
 
 成功带领团队签下：
-✨ {qty} x {product}
+{products_formatted}
 
 气势已开，捷报先传！🚀
 
@@ -104,8 +132,10 @@ if st.button("生成捷报") or raw_input:
 一起冲刺、一起突破、一起创下更高业绩！🔥🔥🔥"""
 
                     st.success("✅ 捷报生成成功！")
+                    st.code(message, language="text")
                     
-                    # Display the text in a code block so it can be copied easily with 1-click
+        except Exception as e:
+            st.error(f"格式错误或解析失败: {e}")
                     st.code(message, language="text")
                     
         except Exception as e:
