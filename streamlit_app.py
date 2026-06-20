@@ -86,7 +86,7 @@ def parse_all_products(raw_text):
     # Format the product dictionary back to lines list
     output_lines = []
     for prod, count in product_counts.items():
-        output_lines.append(f"✨ {count} x {prod}")
+        output_lines.append(f"✨ *{count} x {prod}*")
     
     return output_lines
 
