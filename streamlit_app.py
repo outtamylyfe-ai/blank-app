@@ -14,7 +14,7 @@ contacts = {
     "566": "Chun Huei", "779": "Chin Moi", "989": "Sex Leng", "955": "Yong Heng",
     "819": "Chun Yong", "648": "Yeong Chee", "829": "Mee Mee", "879": "Derek Yeo",
     "891": "Moi Heong", "876": "Jasmine Yien", "873": "Siew Lan", "839": "Xue Ru",
-    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Yeshe Koh", # Updated name here
+    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Ocean Koh", # Updated name here
     "826": "Bee Suan", "813": "Danjuan", "836": "Poh Yoke", "872": "Siew Nee",
     "827": "Vera", "835": "Melly", "6": "Anicca Pte Ltd", "129": "Poh Hua",
     "399": "Betsy Fon", "166": "Su Mei", "413": "Yee Woon", "117": "Liang Ying",
@@ -120,7 +120,7 @@ if st.button("生成捷报") or raw_input:
                     message = f"""让我们以最热烈的掌声，
 恭喜今天下一位成功开单的优秀领导 👏✨
 
-🔥 热烈恭喜 {name} 领导 🔥
+🔥 热烈恭喜 *{name}* 领导 🔥
 
 成功带领团队签下：
 {products_formatted}
