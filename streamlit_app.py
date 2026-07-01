@@ -19,15 +19,15 @@ contacts = {
     "827": "Vera", "835": "Melly", "6": "Anicca Pte Ltd", "129": "Poh Hua",
     "399": "Betsy Fon", "166": "Su Mei", "413": "Yee Woon", "117": "Liang Ying",
     "198": "Qiao Ping", "18": "Shiqing", "144": "Lay Hua", "981": "DaQiang",
-    "987": "Linqiong", "718": "Guo Ming", "306": "Chen Huang", "368": "Apple Huang",
+    "987": "Linqiong", "718": "Guo Ming", "306": "Chen Huang", "368": "Yaping",
     "727": "Jianrong", "789": "Xiyu", "181": "Liufang", "398": "Lifang",
     "798": "Chin Fan", "285": "Edwin Beh", "339": "JianFang", "666": "Chenfeng",
-    "714": "Keh Sin", "871": "Yew Kin", "793": "Pei Chyi", "968": "Victor Chong",
+    "714": "Keh Sin", "871": "Yew Kin", "793": "Maggie Ko", "968": "Victor Chong",
     "688": "Chengrui", "333": "Wilson", "163": "Shanice", "222": "Steven Goh",
     "313": "Kenny Koh", "909": "Mac Lam", "979": "Yvonne Hui", "613": "Lina",
     "393": "Zhao Wei", "911": "Yew Pun", "939": "Teng Fong", "776": "Kar Yik",
-    "933": "Jin Sin", "366": "Wei Shyang", "126": "Fai", "128": "Eric",
-    "216": "Kelly Loo", "263": "Li Han", "621": "Wayne Ang", "249": "Gladys Tan",
+    "933": "Jin Sin", "366": "Wei Shyang", "126": "Yong Joon Fai", "128": "Eric",
+    "216": "Kelly Loo", "263": "Yong Joon Fai", "621": "Wayne Ang", "249": "Gladys Tan",
     "155": "Joice Jedediah", "156": "Lisianah Soewarno", "737": "Henry Tay"
 }
 
@@ -125,11 +125,13 @@ if st.button("生成捷报") or raw_input:
 成功带领团队签下：
 {products_formatted}
 
-气势已开，捷报先传！🚀
+七月正式打响，开门红顺利诞生！🚀
 
-📈 六月目标：10M
-让我们继续保持这股冲劲，
-一起冲刺、一起突破、一起创下更高业绩！🔥🔥🔥"""
+📈 7 月目标：9M
+
+让我们延续这股强劲气势，
+持续开单、不断突破，
+携手向 9M 全力冲刺，再创佳绩！💪"""
 
                     st.success("✅ 捷报生成成功！")
                     st.code(message, language="text")
