@@ -2,7 +2,7 @@ import re
 import streamlit as st
 from collections import Counter
 
-# 1. Contacts dictionary (Updated 889 to Yeshe Koh)
+# 1. Contacts dictionary (With your updated preferred names)
 contacts = {
     "728": "Bryan", "199": "Sam Leong", "252": "Yvonne Tan", "710": "Eric Yip",
     "758": "Caren", "768": "Ken Goh", "778": "Tony", "788": "Teck Meng",
@@ -14,7 +14,7 @@ contacts = {
     "566": "Chun Huei", "779": "Chin Moi", "989": "Sex Leng", "955": "Yong Heng",
     "819": "Chun Yong", "648": "Yeong Chee", "829": "Mee Mee", "879": "Derek Yeo",
     "891": "Moi Heong", "876": "Jasmine Yien", "873": "Siew Lan", "839": "Xue Ru",
-    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Ocean Koh", # Updated name here
+    "898": "Jacqueline", "863": "Bee Lan", "838": "Ai Ching", "889": "Ocean Koh",
     "826": "Bee Suan", "813": "Danjuan", "836": "Poh Yoke", "872": "Siew Nee",
     "827": "Vera", "835": "Melly", "6": "Anicca Pte Ltd", "129": "Poh Hua",
     "399": "Betsy Fon", "166": "Su Mei", "413": "Yee Woon", "117": "Liang Ying",
@@ -41,13 +41,21 @@ def parse_all_products(raw_text):
 
     for content in brackets:
         # Skip brackets explicitly containing price metadata like SRF fees
-        if "SRF" in content.upper():
+        if "SRF" in content.upper() or "URN" in content.upper() and "+" not in content:
             continue
 
         # Split items by comma if they are listed together
         items = [item.strip() for item in content.split(",") if item.strip()]
 
         for item in items:
+            # Drop any trailing modifications chained with a + (e.g., "+ URN X2")
+            if "+" in item:
+                item = item.split("+")[0].strip()
+            
+            # Skip if the remaining item string contains URN completely
+            if "URN" in item.upper() or not item:
+                continue
+
             qty = 1
             product_name = item
 
@@ -64,26 +72,26 @@ def parse_all_products(raw_text):
                 product_name = match_back.group(1).strip()
             
             # Pattern C: Check for complex tracking codes like "B-PS-E-07-328"
-            # It extracts the product type acronym (e.g., 'PS' or 'RS') from the code block
             elif "-" in product_name:
                 code_parts = product_name.split("-")
                 if len(code_parts) >= 2:
-                    # Usually picks the second item or matching token (e.g., PS, RS)
                     for part in code_parts:
-                        if part.upper() in ["PS", "RS", "NV", "H"]: 
-                            product_name = part.upper()
+                        p_upper = part.upper()
+                        # Match structural indicators or specific patterns like H followed by digits
+                        if p_upper in ["PS", "RS", "NV"] or re.match(r"^H\d+", p_upper):
+                            product_name = p_upper
                             break
                     else:
                         product_name = code_parts[1].upper()
 
-            # Handle explicit legacy single item short-codes (e.g., H523)
-            m_h = re.search(r"H\d+", product_name)
+            # Safeguard short-codes with letter variants (e.g., H523A, H501A)
+            m_h = re.search(r"H\d+[A-Z]*", product_name.upper())
             if m_h:
                 product_name = m_h.group()
 
             product_counts[product_name] += qty
 
-    # Format the product dictionary back to lines list
+    # Format the product dictionary back to lines list with markdown asterisks
     output_lines = []
     for prod, count in product_counts.items():
         output_lines.append(f"✨ *{count} x {prod}*")
@@ -116,7 +124,7 @@ if st.button("生成捷报") or raw_input:
                 else:
                     products_formatted = "\n".join(product_lines)
 
-                    # Build message template
+                    # Build message template matching your ideal output style
                     message = f"""让我们以最热烈的掌声，
 恭喜今天下一位成功开单的优秀领导 👏✨
 
@@ -138,7 +146,6 @@ if st.button("生成捷报") or raw_input:
                     
         except Exception as e:
             st.error(f"格式错误或解析失败: {e}")
-            st.code(message, language="text")
                     
         except Exception as e:
             st.error(f"格式错误或解析失败: {e}")
